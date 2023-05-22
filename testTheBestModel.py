@@ -4,16 +4,10 @@ import random
 import math
 import ai3
 
+# model = ai3.load("backup/models1/best_model.pickle")
 model = ai3.load("best_model.pickle")
- 
+
 pygame.init()
- 
-white = (255, 255, 255)
-yellow = (255, 255, 102)
-black = (0, 0, 0)
-red = (213, 50, 80)
-green = (0, 255, 0)
-blue = (50, 153, 213)
 
 colors = {
     "white": (255, 255, 255, 255),
@@ -27,7 +21,7 @@ colors = {
 clock = pygame.time.Clock()
  
 snake_block_size = 10
-snake_speed = 25
+snake_speed = 40
  
 display_width = 60 * snake_block_size
 display_height = 40 * snake_block_size
@@ -77,8 +71,8 @@ def gameLoop():
     while not game_over:
  
         while game_close == True:
-            display.fill(blue)
-            message("You Lost! Press C-Play Again or Q-Quit", red)
+            display.fill(colors["blue"])
+            message("You Lost! Press C-Play Again or Q-Quit", colors["red"])
             Your_score(Length_of_snake - 1)
             pygame.display.update()
  
@@ -126,8 +120,8 @@ def gameLoop():
             game_close = True
         x1 += x1_change
         y1 += y1_change
-        display.fill(blue)
-        pygame.draw.rect(display, green, [foodx, foody, snake_block_size, snake_block_size])
+        display.fill(colors["blue"])
+        pygame.draw.rect(display, colors["green"], [foodx, foody, snake_block_size, snake_block_size])
         snake_Head = []
         snake_Head.append(x1)
         snake_Head.append(y1)
@@ -211,13 +205,15 @@ def gameLoop():
         
         angle = calculate_angle(x1, y1, foodx, foody, direction)
 
-        if angle < -45 : normalizedAngle = -1
-        elif angle <= 45: normalizedAngle = 0
-        elif angle > 45: normalizedAngle = 1
-        # normalizedAngle = angle / 180
+        if angle < -45 : adviseTurnDirection = -1
+        elif angle <= 45: adviseTurnDirection = 0
+        elif angle > 45: adviseTurnDirection = 1
+        normalizedAngle = angle / 180
+
 
         networkInput = obstacles.copy()
         networkInput.insert(0, normalizedAngle)
+        networkInput.insert(0, adviseTurnDirection)
         networkOutput = model.compute(networkInput)
 
         highest_index = networkOutput.index(max(networkOutput))

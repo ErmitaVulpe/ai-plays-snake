@@ -38,7 +38,8 @@ class neuralNetworkClass:
     def __getstate__(self): # Serialize the data
         output = {
             'generation': self.generation, 
-            'layersList': self.layersList
+            'layersList': self.layersList,
+            'score': self.score
         }
         for key in self.layersList.keys():
             if key == "numberOfLayers": continue
