@@ -8,7 +8,6 @@ bestModelFile = "best_model.pickle"
 class neuralNetworkInator:
     score = 0
     generation = 0
-    numberOfHiddenLayers = 1
 
     class layerInator:
         numberOfNodes = 0
@@ -31,10 +30,12 @@ class neuralNetworkInator:
                     for i in range(self.numberOfNodes):
                         setattr(self, f"outputLayer_{i}", self.nodeInator())
 
-    def __init__(self, numberOfInputNodes: int, numberOfOutputNodes: int):
+    def __init__(self, numberOfInputNodes: int, numberOfOutputNodes: int, numberOfHiddenLayers: int):
         self.inputLayer = self.layerInator(numberOfInputNodes=numberOfInputNodes, type="input")
         self.outputLayer = self.layerInator(numberOfOutputNodes=numberOfOutputNodes, type="output")
-        self.hiddenLayer0 = self.layerInator()
+        self.numberOfHiddenLayers = numberOfHiddenLayers
+        for i in range(numberOfHiddenLayers): setattr(self, f"hiddenLayer{i}", self.layerInator())
+        # self.hiddenLayer0 = self.layerInator()
 
 
     def mutate(self, level: int=1):
@@ -46,7 +47,7 @@ class neuralNetworkInator:
 
         Returns: None
         """
-        if level < 1 or level > 100: raise ValueError("Mutation level out of range. Try 1 - 10")
+        if level < 1 or level > 100: raise ValueError("Mutation level out of range. Try 1 - 100")
 
         def mutation():
             layerIndex = random.randint(0, self.numberOfHiddenLayers - 1)
@@ -58,7 +59,7 @@ class neuralNetworkInator:
                 for i in range(previousLayerPointer.numberOfNodes): previousLayerNodesList.append(getattr(previousLayerPointer, f"inputLayer_{i}"))
             else:
                 previousLayerPointer = getattr(self, f"hiddenLayer{layerIndex}")
-                for i in range(getattr(previousLayerPointer, "NumberOfNodes")): previousLayerNodesList.append(f"hiddenLayer_{i}")
+                for i in range(getattr(previousLayerPointer, "numberOfNodes")): previousLayerNodesList.append(f"hiddenLayer_{i}")
 
             def createNode(layerPointer: object = None):
                 """
@@ -102,7 +103,7 @@ class neuralNetworkInator:
             mutationFloat = random.uniform(0, 100)
             if      mutationFloat < 70: modifyParrentWeigth(nodePointer)
             elif    mutationFloat < 80: addConnection(layerPointer=layerPointer, previousLayerNodesList=previousLayerNodesList, nodePointer=nodePointer)
-            elif    mutationFloat < 83: createNode(layerPointer=layerPointer)
+            elif    mutationFloat < 81: createNode(layerPointer=layerPointer)
             
             # TODO remove a node, remove a connection, add a layer, remove a layer
 
@@ -125,13 +126,10 @@ class neuralNetworkInator:
         
 
 
-neuralNetwork = neuralNetworkInator(numberOfInputNodes=60 * 40 * 2 + 5, numberOfOutputNodes=4)
-neuralNetwork.mutate(100)
+neuralNetwork = neuralNetworkInator(numberOfInputNodes=60 * 40 * 2 + 5, numberOfOutputNodes=4, numberOfHiddenLayers=10)
+neuralNetwork.mutate(10)
 # print(neuralNetwork.hiddenLayer0.node_0)
 # print(neuralNetwork.hiddenLayer0.node_0.parrents)
-
-
-
 
 
 with open('object_file.pickle', 'wb') as file:

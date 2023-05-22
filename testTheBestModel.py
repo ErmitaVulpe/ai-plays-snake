@@ -2,29 +2,18 @@ import pygame
 import time
 import random
 import math
-import copy
 import ai3
 
-bestModelFile = "best_model.pickle"
-top100File = "object_file.pickle"
-top100List = ai3.load(top100File)
-
-trainingSet = []
-
-for model in top100List:
-    model.generation += 1
-    model.score = 0
-    trainingSet.append(model)
-    for i in range(4):
-        newModel = copy.deepcopy(model)
-        newModel.mutate()
-        newModel.score = 0
-        trainingSet.append(newModel)
-print(model.generation)
-
-selectedModel = None
-
+model = ai3.load("best_model.pickle")
+ 
 pygame.init()
+ 
+white = (255, 255, 255)
+yellow = (255, 255, 102)
+black = (0, 0, 0)
+red = (213, 50, 80)
+green = (0, 255, 0)
+blue = (50, 153, 213)
 
 colors = {
     "white": (255, 255, 255, 255),
@@ -34,18 +23,19 @@ colors = {
     "green": (0, 255, 0, 255),
     "blue": (50, 153, 213, 255)
 }
-  
+ 
+clock = pygame.time.Clock()
+ 
 snake_block_size = 10
-snake_speed = 999999999999999999999999
-
+snake_speed = 25
+ 
 display_width = 60 * snake_block_size
 display_height = 40 * snake_block_size
  
 display = pygame.display.set_mode((display_width, display_height))
- 
-clock = pygame.time.Clock()
- 
+
 font_style = pygame.font.SysFont("bahnschrift", 25)
+score_font = pygame.font.SysFont("comicsansms", 35)
  
  
 def Your_score(score):
@@ -65,6 +55,7 @@ def message(msg, color):
     mesg = font_style.render(msg, True, color)
     display.blit(mesg, [display_width / 6, display_height / 3])
  
+ 
 def gameLoop():
     game_over = False
     game_close = False
@@ -76,25 +67,19 @@ def gameLoop():
     x1_change = 0
     y1_change = 0
  
-    moveHistory = []
     snake_List = []
     Length_of_snake = 1
-    score = 0
     button = 1
-    movesSinceLastFood = 0
  
-    foodx = round(random.randrange(0, display_width - snake_block_size) / snake_block_size) * snake_block_size
-    foody = round(random.randrange(0, display_height - snake_block_size) / snake_block_size) * snake_block_size
+    foodx = round(random.randrange(0, display_width - snake_block_size) / 10.0) * 10.0
+    foody = round(random.randrange(0, display_height - snake_block_size) / 10.0) * 10.0
  
     while not game_over:
-        if game_close == True:
-            selectedModel.score += (Length_of_snake - 1) * 10 + (15 / (math.sqrt(abs(x1 - foodx) ** 2 + abs(y1 - foody) ** 2)))
-            break
-            game_close = False
-            display.fill(colors["blue"])
-            message("You Lost! Press C-Play Again or Q-Quit", colors["red"])
-            score = Length_of_snake - 1
-            Your_score(score)
+ 
+        while game_close == True:
+            display.fill(blue)
+            message("You Lost! Press C-Play Again or Q-Quit", red)
+            Your_score(Length_of_snake - 1)
             pygame.display.update()
  
             for event in pygame.event.get():
@@ -141,8 +126,8 @@ def gameLoop():
             game_close = True
         x1 += x1_change
         y1 += y1_change
-        display.fill(colors["blue"])
-        pygame.draw.rect(display, colors["green"], [foodx, foody, snake_block_size, snake_block_size])
+        display.fill(blue)
+        pygame.draw.rect(display, green, [foodx, foody, snake_block_size, snake_block_size])
         snake_Head = []
         snake_Head.append(x1)
         snake_Head.append(y1)
@@ -155,8 +140,7 @@ def gameLoop():
                 game_close = True
  
         our_snake(snake_block_size, snake_List, snake_Head)
-        score = Length_of_snake - 1
-        Your_score(10 *score)
+        Your_score(Length_of_snake - 1)
  
         pygame.display.update()
  
@@ -164,13 +148,12 @@ def gameLoop():
             foodx = round(random.randrange(0, display_width - snake_block_size) / 10.0) * 10.0
             foody = round(random.randrange(0, display_height - snake_block_size) / 10.0) * 10.0
             Length_of_snake += 1
-            movesSinceLastFood = 0
+
 
 
         # Handle the network
         if snake_Head[0] < 0 or snake_Head[0] >= display_width or snake_Head[1] < 0 or snake_Head[1] >= display_height: 
             game_close = True
-            selectedModel.score = -10
             continue
 
         match direction:
@@ -212,9 +195,6 @@ def gameLoop():
             if obstacles[index] == 1: continue # doesn't check the color of tiles out of bounds
             if display.get_at((headNeighbours[value][0] * snake_block_size + int(snake_block_size / 2), headNeighbours[value][1] * snake_block_size + int(snake_block_size / 2))) == colors["black"]: obstacles[index] = 1
 
-        # if len(headNeighbours) > 0:
-        #     print(obstacles)
-
         def calculate_angle(x1, y1, foodx, foody, direction):
             angle_to_food = math.atan2(foody - y1, foodx - x1)
             direction_radians = math.radians((direction - 1) * 90)
@@ -231,51 +211,25 @@ def gameLoop():
         
         angle = calculate_angle(x1, y1, foodx, foody, direction)
 
-        if angle < -45 : adviseTurnDirection = -1
-        elif angle <= 45: adviseTurnDirection = 0
-        elif angle > 45: adviseTurnDirection = 1
-        normalizedAngle = angle / 180
- 
+        if angle < -45 : normalizedAngle = -1
+        elif angle <= 45: normalizedAngle = 0
+        elif angle > 45: normalizedAngle = 1
+        # normalizedAngle = angle / 180
 
         networkInput = obstacles.copy()
         networkInput.insert(0, normalizedAngle)
-        networkInput.insert(0, adviseTurnDirection)
-        networkOutput = selectedModel.compute(networkInput)
-
-        # moveHistory.append(highest_index)
-        # if len(moveHistory) > 100:
-        #     lastElement = moveHistory[-1]
-        #     if all(element == lastElement for element in moveHistory[-100:]):
-        #         print("IDIOT")
-        #         selectedModel.score = -20
-        #         break
-        # # I've got a better idea
-
-        movesSinceLastFood += 1
-        if (movesSinceLastFood == (display_height / snake_block_size) * (display_width / snake_block_size)) or (len(snake_List) > 5 and movesSinceLastFood > (max(display_height / snake_block_size, display_width / snake_block_size))):
-            print("IDIOT")
-            selectedModel.score = -20
-            break
+        networkOutput = model.compute(networkInput)
 
         highest_index = networkOutput.index(max(networkOutput))
         button += highest_index - 1
         if button == 0: button = 4
         elif button == 5: button = 1
 
+ 
         clock.tick(snake_speed)
-
-
-
-
-for index, model in enumerate(trainingSet):
-    # print(f"\033[32m Starting to train model {index + 1} \033[0m")
-    selectedModel = model
-    gameLoop()
-
-trainingSet.sort(key=lambda obj: obj.score, reverse=True)
-print(trainingSet[0].score, trainingSet[-1].score)
-ai3.export(top100File, trainingSet[:100])
-ai3.export(bestModelFile, trainingSet[0])
-
-pygame.quit()
-quit()
+ 
+    pygame.quit()
+    quit()
+ 
+ 
+gameLoop()
