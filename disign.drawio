@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="o3xQGUq4JhhZXKFNt4qU" name="First plan (attempt 1-3)">
-        <mxGraphModel dx="1750" dy="719" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+        <mxGraphModel dx="650" dy="571" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -872,7 +872,7 @@
         </mxGraphModel>
     </diagram>
     <diagram id="r1g82FIowsR6X4XUddD4" name="Seccond plan (attempt 4)">
-        <mxGraphModel dx="1944" dy="799" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" background="none" math="0" shadow="0">
+        <mxGraphModel dx="650" dy="571" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" background="none" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
