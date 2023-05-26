@@ -41,6 +41,18 @@ class NeuralNetwork:
 
     # --- removeLayer
 
+    def removeLayer(self, layerIndex: int = None):
+        if layerIndex == "l0" or layerIndex == "l1": return print(f"Cannot remove {layerIndex}")
+        if layerIndex == None:
+            filteredLayers = [element for element in list(self.layers) if element != "l0" and element != "l1"]
+            if len(filteredLayers) == 0: return print("No layers to remove.")
+            layerIndex = random.choice(filteredLayers)
+        if layerIndex not in self.layers: return print("Cannot remove a non-existing layer.")
+
+        for node in self.layers[layerIndex]:
+            self.removeNode(node)
+        self.layers.pop(layerIndex)
+
     # --- addNode
     
     def addNode(self, layerID: str = None):
@@ -201,10 +213,10 @@ def printall(network):
 # printall(network)
 # network.addConnection(parentNodeID="n0", childNodeID="n3")
 # network.addConnection(parentNodeID="n0", childNodeID="n3")
-printall(network)
 network.addLayer()
-network.removeNode()
-# network.addLayer()
+# network.removeNode()
+network.removeLayer()
+printall(network)
 # network.removoNode("n7")
 # print(network.connections["c2"].parent)
 # print(network.connections["c2"].child)
