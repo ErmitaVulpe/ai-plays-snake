@@ -52,6 +52,7 @@ class NeuralNetwork:
         for node in self.layers[layerIndex]:
             self.removeNode(node)
         self.layers.pop(layerIndex)
+        self.layerOrder.remove(layerIndex)
 
     # --- addNode
     
@@ -100,9 +101,6 @@ class NeuralNetwork:
             if childLayerID != None: childNodeID = random.choice(self.layers[childLayerID])
             else: childLayerID = random.choice(self.layerOrder[1:])
         else: childLayerID = self.nodes[childNodeID].layer
-
-        # connectionExists = False
-        # if childNodeID in self.nodes[parentNodeID].childrenConnections: print("lolo")
 
         # 3 diffrent loops for performance sake. Computational efficiency wise it's better to have an if statement that executes once than every loop iteration
         if preferedParentLayerID != None:
@@ -167,12 +165,43 @@ class NeuralNetwork:
 
         return outputs
     
-    # --- mutate
+    # --- mutations
 
-    def mutate(self, mutation_rate):
-        for conn in self.connections.values():
-            if random.random() < mutation_rate:
-                conn.weight += math.sinh(2 * random.uniform(-1, 1)) / 20
+    def mutate(self):
+        addLayerChance = 0.05
+        removeLayerChance = 0.05
+        addNodeChance = 0.10
+        removeNodeChance = 0.70
+        addConnectionChance = 0.20
+        removeConnectionChance = 0.20
+        metateWeightChance = 0.40
+        metateBiasChance = 0.40
+
+        if random.random() < addLayerChance: self.addLayer()
+        if random.random() < removeLayerChance: self.removeLayer()
+
+        for layer in [element for element in list(self.layers) if element != "l0" and element != "l1"]:
+            if random.random() < addNodeChance: self.addNode(layer)
+            if random.random() < removeNodeChance: self.removeNode(layer)
+
+        for node in list(self.nodes):
+            # if random.random() < addConnectionChance: self.addConnection(parentNodeID=node)
+            # if random.random() < addConnectionChance: self.addConnection(childNodeID=node)
+            if random.random() < addConnectionChance: self.addConnection()
+            if random.random() < metateBiasChance: self.mutateBias(node)
+
+        for connection in list(self.connections):
+            if random.random() < metateWeightChance: self.mutateWeight(connection)
+            if random.random() < removeConnectionChance: self.removeConnection(connection)
+
+    
+    def mutateWeight(self, connectionID: str = None):
+        if connectionID == None: connectionID = random.choice(self.connections)
+        self.connections[connectionID].weight += math.sinh(2 * random.uniform(-1, 1)) / 30
+
+    def mutateBias(self, nodeID: str = None):
+        if nodeID == None: nodeID = random.choice(self.nodes)
+        self.nodes[nodeID].bias += math.sinh(2 * random.uniform(-1, 1)) / 30
 
 # ---
 
@@ -192,45 +221,51 @@ class connection:
 
 # ---
 
-# Create a neural network with 2 input nodes and 1 output node
-network = NeuralNetwork(3, 4)
 
-def printall(network):
-    print(f"input_size: \n", network.input_size, "\n")
-    print(f"output_size: \n", network.output_size, "\n")
-    print(f"nodes: \n", network.nodes, "\n")
-    print(f"nextNodeID: \n", network.nextNodeID, "\n")
-    print(f"connections: \n", network.connections, "\n")
-    print(f"nextConnectionID: \n", network.nextConnectionID, "\n")
-    print(f"layers: \n", network.layers, "\n")
-    print(f"nextLayerID: \n", network.nextLayerID, "\n")
-    print(f"layerOrder: \n", network.layerOrder, "\n")
-    print(f"generation: \n", network.generation, "\n")
+if __name__ == "__main__":
 
+    # Create a neural network with 2 input nodes and 1 output node
+    # network = NeuralNetwork(3, 4)
+    network = NeuralNetwork(1, 1)
 
-
-
-# printall(network)
-# network.addConnection(parentNodeID="n0", childNodeID="n3")
-# network.addConnection(parentNodeID="n0", childNodeID="n3")
-network.addLayer()
-# network.removeNode()
-network.removeLayer()
-printall(network)
-# network.removoNode("n7")
-# print(network.connections["c2"].parent)
-# print(network.connections["c2"].child)
+    def printall(network):
+        print(f"input_size: \n", network.input_size, "\n")
+        print(f"output_size: \n", network.output_size, "\n")
+        print(f"nodes: \n", network.nodes, "\n")
+        print(f"nextNodeID: \n", network.nextNodeID, "\n")
+        print(f"connections: \n", network.connections, "\n")
+        print(f"nextConnectionID: \n", network.nextConnectionID, "\n")
+        print(f"layers: \n", network.layers, "\n")
+        print(f"nextLayerID: \n", network.nextLayerID, "\n")
+        print(f"layerOrder: \n", network.layerOrder, "\n")
+        print(f"generation: \n", network.generation, "\n")
 
 
 
 
-# # test removeConnection()
-# network.addLayer()
-# con = network.connections["c0"]
-# parentNode = network.nodes[con.parent]
-# childNode = network.nodes[con.child]
-# print(parentNode.childrenConnections)
-# print(childNode.parentsConnections)
-# network.removeConnection("c0")
-# print(parentNode.childrenConnections)
-# print(childNode.parentsConnections)
+    # printall(network)
+    # network.addConnection(parentNodeID="n0", childNodeID="n3")
+    # network.addConnection(parentNodeID="n0", childNodeID="n3")
+    network.addLayer()
+    # network.removeNode()
+    network.removeLayer()
+    network.addConnection()
+    network.mutate()
+    printall(network)
+    # network.removoNode("n7")
+    # print(network.connections["c2"].parent)
+    # print(network.connections["c2"].child)
+
+
+
+
+    # # test removeConnection()
+    # network.addLayer()
+    # con = network.connections["c0"]
+    # parentNode = network.nodes[con.parent]
+    # childNode = network.nodes[con.child]
+    # print(parentNode.childrenConnections)
+    # print(childNode.parentsConnections)
+    # network.removeConnection("c0")
+    # print(parentNode.childrenConnections)
+    # print(childNode.parentsConnections)
