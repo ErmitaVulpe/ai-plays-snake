@@ -40,11 +40,11 @@ class snakeGame:
 
         os.system('cls')
 
-        for rows in self.field:
+        for y in range(self.fieldHeight):
             # print(f"row = {row}")
-            for tile in rows:
+            for x in range(self.fieldWidth):
                 # print(tile)
-                match tile:
+                match self.field[x][y]:
                     case 0: print(background, end="")
                     case 1: print(body, end="")
                     case 2: print(head, end="")
@@ -74,13 +74,13 @@ class snakeGame:
         headPosition = self.snakePosition[0]
         self.field[headPosition[0]][headPosition[1]] = 1
         match self.direction:
-            case 1: newHead = (headPosition[0] - 1, headPosition[1])
-            case 2: newHead = (headPosition[0], headPosition[1] + 1)
-            case 3: newHead = (headPosition[0] + 1, headPosition[1])
-            case 4: newHead = (headPosition[0], headPosition[1] - 1)
+            case 1: newHead = (headPosition[0], headPosition[1] - 1)
+            case 2: newHead = (headPosition[0] + 1, headPosition[1])
+            case 3: newHead = (headPosition[0], headPosition[1] + 1)
+            case 4: newHead = (headPosition[0] - 1, headPosition[1])
 
-        if newHead[0] < 0 or newHead[0] >= self.fieldHeight or \
-           newHead[1] < 0 or newHead[1] >= self.fieldWidth or \
+        if newHead[0] < 0 or newHead[0] >= self.fieldWidth or \
+           newHead[1] < 0 or newHead[1] >= self.fieldHeight or \
            newHead in self.snakePosition:
             return True
 
@@ -97,6 +97,7 @@ class snakeGame:
 
         if self.visible: self.renderGame()
         return False
+
 
 
 
@@ -144,12 +145,11 @@ def isFieldSplit(field):
     return False
 
 
-
-
-
-
 if __name__ == "__main__":
-    snakeInstance = snakeGame(11, 11, True)
+    snakeInstance = snakeGame(21, 5, True)
+    print(snakeInstance.fieldWidth)
+    print(snakeInstance.fieldHeight)
+    print(snakeInstance.field)
 
     snakeInstance.renderGame()
     isGameOver = False

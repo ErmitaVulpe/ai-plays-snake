@@ -203,7 +203,7 @@ class neuralNetwork:
     # --- mutations
 
     def mutate(self):
-        addLayerChance = 0.05
+        addLayerChance = 0.075
         removeLayerChance = 0.05
         addNodeChance = 0.10
         removeNodeChance = 0.10

@@ -7,5 +7,5 @@ fileName = "trainingModels.pickle"
 
 lolo = []
 for i in range(100):
-    lolo.append(ai4.neuralNetwork(11, 4))
+    lolo.append(ai4.neuralNetwork(14, 4))
 ai4.export(fileName, lolo)
