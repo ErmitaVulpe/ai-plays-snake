@@ -1,8 +1,11 @@
 import random
 import math
 import pickle
+# from numba import jit
+# @jit(target_backend='cuda')
 
-class NeuralNetwork:
+
+class neuralNetwork:
     def __init__(self, input_size: int, output_size: int):
         self.input_size = input_size
         self.output_size = output_size
@@ -13,6 +16,7 @@ class NeuralNetwork:
         self.layers = {}
         self.nextLayerID = 0
         self.layerOrder = []
+        self.score = 0
         self.generation = 0
 
         # Define an initail structure of the network
@@ -21,6 +25,18 @@ class NeuralNetwork:
         self.addLayer(1)
         for _ in range(output_size - 1): self.addNode("l1")
         self.addConnection()
+
+    def printall(self):
+        print(f"input_size: \n", self.input_size, "\n")
+        print(f"output_size: \n", self.output_size, "\n")
+        print(f"nodes: \n", self.nodes, "\n")
+        print(f"nextNodeID: \n", self.nextNodeID, "\n")
+        print(f"connections: \n", self.connections, "\n")
+        print(f"nextConnectionID: \n", self.nextConnectionID, "\n")
+        print(f"layers: \n", self.layers, "\n")
+        print(f"nextLayerID: \n", self.nextLayerID, "\n")
+        print(f"layerOrder: \n", self.layerOrder, "\n")
+        print(f"generation: \n", self.generation, "\n")
 
     # --- addLayer
 
@@ -51,13 +67,14 @@ class NeuralNetwork:
 
         for node in self.layers[layerIndex]:
             self.removeNode(node)
-        self.layers.pop(layerIndex)
-        self.layerOrder.remove(layerIndex)
+        if layerIndex in self.layers: self.layers.pop(layerIndex)
+        if layerIndex in self.layerOrder: self.layerOrder.remove(layerIndex)
 
     # --- addNode
     
     def addNode(self, layerID: str = None):
         nodeID = f"n{self.nextNodeID}"
+        if layerID not in self.layers: return print("invalid layer to add a node to")
         if layerID == None: 
             filteredLayers = [element for element in list(self.layers) if element != "l0" and element != "l1"]
             if len(filteredLayers) < 3: return self.addLayer()
@@ -81,9 +98,12 @@ class NeuralNetwork:
         for connection in nodePointer.parentsConnections + nodePointer.childrenConnections:
             self.removeConnection(connection)
         
-        self.layers[nodePointer.layer].remove(nodeID)
+        layer = nodePointer.layer
+        self.layers[layer].remove(nodeID)
         self.nodes.pop(nodeID)
         del nodePointer
+
+        if len(self.layers[layer]) == 0: self.removeLayer(layer)
 
     # --- addConnection
 
@@ -114,11 +134,16 @@ class NeuralNetwork:
                 parentLayerID = random.choice(self.layerOrder[:1])
                 childLayerID = random.choice(self.layerOrder[1:])
 
+        if len(self.layers[parentLayerID]) == 0: return print("Parent layer is empty")
+        if len(self.layers[childLayerID]) == 0: return print("Child layer is empty")
         if parentNodeID == None: parentNodeID = random.choice(self.layers[parentLayerID])
         if childNodeID == None: childNodeID = random.choice(self.layers[childLayerID])
 
         if len(self.layers[childLayerID]) == 0: self.addNode(childLayerID) # this might be useless. TODO check later
         if len(self.layers[parentLayerID]) == 0: self.addNode(parentLayerID)
+
+        for connectionID in self.nodes[parentNodeID].childrenConnections:
+            if self.connections[connectionID].child == childNodeID: return "Such a connection already exists."
 
         connectionID = f"c{self.nextConnectionID}"
         self.connections[connectionID] = connection(parentNodeID, childNodeID)
@@ -141,29 +166,39 @@ class NeuralNetwork:
     # --- forward propagation 
 
     def forward(self, inputs):
-        # Initialize the output values of all nodes
-        for node in self.nodes.values():
-            node.output = 0
+        # @jit(target_backend='cuda')
+        def matrixMultiplication(list1: list, list2: list):
+            if len(list1) != len(list2): return print("Bruh")
+            output = 0
+            for i in range(len(list1)):
+                output += list1[i] * list2[i]
+            return output
 
-        # Set the input values
-        for i, input_val in enumerate(inputs):
-            self.nodes[i].output = input_val
 
-        # Propagate the inputs through the network
-        for layer_id in self.layers:
-            for node_id in layer_id:
-                node = self.nodes[node_id]
-                for conn in self.connections.values():
-                    if conn.to_node == node_id:
-                        node.output += self.nodes[conn.from_node].output * conn.weight
-                node.output = math.tanh(node.output)
+        if len(inputs) != self.input_size: raise ValueError(f"\033[31m Invalid number o inputs \033[0m")
+        for i in inputs:
+            if not isinstance(i, (float, int)): raise ValueError(f"\033[31m Input contains a non numerical value \033[0m")
 
-        # Collect the output values
-        outputs = []
-        for i in range(self.input_size, self.input_size + self.output_size):
-            outputs.append(self.nodes[i].output)
+        for index, nodeID in enumerate(self.layers["l0"]):
+            self.nodes[nodeID].value = inputs[index]
 
-        return outputs
+        for layerID in self.layerOrder:
+            for nodeID in self.layers[layerID]:
+                weights = []
+                values = []
+                for connectionID in self.nodes[nodeID].parentsConnections:
+                    # value += self.nodes[self.connections[connectionID].parent].value * self.connections[connectionID].weight
+                    weights.append(self.connections[connectionID].weight)
+                    values.append(self.nodes[self.connections[connectionID].parent].value)
+                value = matrixMultiplication(weights, values)
+                value += self.nodes[nodeID].bias
+                self.nodes[nodeID].value = max(math.tanh(2 * value), 0)
+
+        output = []
+        for nodeID in self.layers[self.layerOrder[-1]]:
+            output.append(self.nodes[nodeID].value)
+        return output
+
     
     # --- mutations
 
@@ -171,9 +206,9 @@ class NeuralNetwork:
         addLayerChance = 0.05
         removeLayerChance = 0.05
         addNodeChance = 0.10
-        removeNodeChance = 0.70
-        addConnectionChance = 0.20
-        removeConnectionChance = 0.20
+        removeNodeChance = 0.10
+        addConnectionChance = 0.33
+        removeConnectionChance = 0.33
         metateWeightChance = 0.40
         metateBiasChance = 0.40
 
@@ -194,6 +229,8 @@ class NeuralNetwork:
             if random.random() < metateWeightChance: self.mutateWeight(connection)
             if random.random() < removeConnectionChance: self.removeConnection(connection)
 
+        self.generation += 1
+
     
     def mutateWeight(self, connectionID: str = None):
         if connectionID == None: connectionID = random.choice(self.connections)
@@ -211,6 +248,7 @@ class node:
         self.childrenConnections = []
         self.layer = layer
         self.bias = math.tanh(2 * random.uniform(-1, 1))
+        self.value = 0
 
 
 class connection:
@@ -221,12 +259,36 @@ class connection:
 
 # ---
 
+def export(fileName, network):
+    """
+    Export the network to a .pickle file
+
+    Parameters: 
+        - fileName (str): filename
+        - network (object): object to export
+    """
+    with open(fileName, 'wb') as file:
+        pickle.dump(network, file)
+
+def load(fileName):
+    """
+    Export the network to a .pickle file
+
+    Parameters: fileName (str): filenamen
+
+    Returns: obj: Object containing the network
+    """
+    with open(fileName, 'rb') as file:
+        return pickle.load(file)
+    
+# ---
+
 
 if __name__ == "__main__":
 
     # Create a neural network with 2 input nodes and 1 output node
     # network = NeuralNetwork(3, 4)
-    network = NeuralNetwork(1, 1)
+    network = neuralNetwork(2, 2)
 
     def printall(network):
         print(f"input_size: \n", network.input_size, "\n")
@@ -246,26 +308,37 @@ if __name__ == "__main__":
     # printall(network)
     # network.addConnection(parentNodeID="n0", childNodeID="n3")
     # network.addConnection(parentNodeID="n0", childNodeID="n3")
-    network.addLayer()
+    # network.addLayer()
     # network.removeNode()
-    network.removeLayer()
-    network.addConnection()
+    # network.removeLayer()
+    # network.addConnection()
+    # printall(network)
+
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
+    network.mutate()
     network.mutate()
     printall(network)
+    # from timeit import default_timer as timer
+    # start = timer()
+    # print(network.forward([0.2, 0.9]))
+    # print("with GPU:", timer()-start)
     # network.removoNode("n7")
     # print(network.connections["c2"].parent)
     # print(network.connections["c2"].child)
-
-
-
-
-    # # test removeConnection()
-    # network.addLayer()
-    # con = network.connections["c0"]
-    # parentNode = network.nodes[con.parent]
-    # childNode = network.nodes[con.child]
-    # print(parentNode.childrenConnections)
-    # print(childNode.parentsConnections)
-    # network.removeConnection("c0")
-    # print(parentNode.childrenConnections)
-    # print(childNode.parentsConnections)
