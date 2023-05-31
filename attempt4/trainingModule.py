@@ -91,8 +91,12 @@ def snakeDriver(model):
         elif angle >= 225 and angle < 315: networkInput += [0, 0, 0, 1, angle / 360]
 
         networkOutput = model.forward(networkInput)
-        isGameOver = snakeInstance.gameLoop(networkOutput.index(max(networkOutput)) + 1)
-    model.score += snakeInstance.score * 10 + (1 / (math.sqrt(abs(headPosition[0] - snakeInstance.foodX) ** 2 + abs(headPosition[1] - snakeInstance.foodY) ** 2)))
+        moveDirection = networkOutput.index(max(networkOutput)) + 1
+        isGameOver = snakeInstance.gameLoop(moveDirection)
+
+        normalisedAngle = networkInput[-5:-1]
+        if normalisedAngle[moveDirection - 1] == 1: model.score += 1
+    model.score += snakeInstance.score * 10 + (1 / (math.sqrt(abs(headPosition[0] - snakeInstance.foodX) ** 2 + abs(headPosition[1] - snakeInstance.foodY) ** 2))) - 10
 
 
 def trainingInstance(modelList):
