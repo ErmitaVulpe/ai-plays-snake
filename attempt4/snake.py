@@ -81,7 +81,7 @@ class snakeGame:
 
         if newHead[0] < 0 or newHead[0] >= self.fieldWidth or \
            newHead[1] < 0 or newHead[1] >= self.fieldHeight or \
-           newHead in self.snakePosition:
+           newHead in self.snakePosition[:-1]:
             return True
 
         if newHead == (self.foodX, self.foodY):
@@ -115,7 +115,7 @@ def isFieldSplit(field):
 
     # Helper function to perform a depth-first search (DFS)
     def dfs(row, col):
-        if not is_valid_position(row, col) or field[row][col] != 0:
+        if not is_valid_position(row, col) or (field[row][col] != 0 and field[row][col] != 3):
             return
 
         field[row][col] = -1  # Mark the current position as visited
@@ -146,96 +146,96 @@ def isFieldSplit(field):
 
 
 if __name__ == "__main__":
-    snakeInstance = snakeGame(21, 5, True)
-    print(snakeInstance.fieldWidth)
-    print(snakeInstance.fieldHeight)
-    print(snakeInstance.field)
+    # snakeInstance = snakeGame(21, 5, True)
+    # print(snakeInstance.fieldWidth)
+    # print(snakeInstance.fieldHeight)
+    # print(snakeInstance.field)
 
-    snakeInstance.renderGame()
-    isGameOver = False
-    while not isGameOver:
-        isGameOver = snakeInstance.gameLoop(int(input()))
+    # snakeInstance.renderGame()
+    # isGameOver = False
+    # while not isGameOver:
+    #     isGameOver = snakeInstance.gameLoop(int(input()))
 
-    # field = [
-    #     [0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0],
-    #     [0, 0, 1, 0, 0],
-    #     [0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0]
-    # ] # False
-    # print("Should be False, is ", isFieldSplit(field))
+    field = [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0]
+    ] # False
+    print("Should be False, is ", isFieldSplit(field))
 
-    # field = [
-    #     [0, 0, 1, 0, 0],
-    #     [0, 0, 1, 0, 0],
-    #     [0, 0, 1, 0, 0],
-    #     [0, 0, 1, 0, 0],
-    #     [0, 0, 1, 0, 0]
-    # ]  # True
-    # print("Should be True, is  ", isFieldSplit(field))
+    field = [
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 3, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0]
+    ]  # True
+    print("Should be True, is  ", isFieldSplit(field))
 
-    # field = [
-    #     [0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0],
-    #     [1, 2, 1, 1, 1],
-    #     [0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0]
-    # ] # True
-    # print("Should be True, is  ", isFieldSplit(field))
+    field = [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [1, 2, 1, 1, 1],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0]
+    ] # True
+    print("Should be True, is  ", isFieldSplit(field))
 
-    # field = [
-    #     [0, 0, 0, 1, 0],
-    #     [0, 1, 0, 1, 0],
-    #     [0, 1, 0, 1, 0],
-    #     [0, 1, 0, 1, 0],
-    #     [0, 1, 0, 0, 0]
-    # ] # False
-    # print("Should be False, is ", isFieldSplit(field))
+    field = [
+        [0, 0, 0, 1, 0],
+        [0, 1, 0, 1, 0],
+        [0, 1, 3, 1, 0],
+        [0, 1, 0, 1, 0],
+        [0, 1, 0, 0, 0]
+    ] # False
+    print("Should be False, is ", isFieldSplit(field))
 
-    # field = [
-    #     [0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0],
-    #     [0, 0, 0, 1, 1],
-    #     [0, 0, 0, 1, 0]
-    # ] # True
-    # print("Should be True, is  ", isFieldSplit(field))
+    field = [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 1, 1],
+        [0, 0, 0, 1, 0]
+    ] # True
+    print("Should be True, is  ", isFieldSplit(field))
 
-    # field = [
-    #     [0, 0, 0, 1, 0],
-    #     [0, 0, 0, 1, 0],
-    #     [0, 0, 0, 1, 0],
-    #     [0, 0, 0, 0, 0],
-    #     [0, 0, 1, 0, 0]
-    # ] # False
-    # print("Should be False, is ", isFieldSplit(field))
+    field = [
+        [0, 0, 0, 1, 0],
+        [0, 0, 0, 1, 0],
+        [0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0]
+    ] # False
+    print("Should be False, is ", isFieldSplit(field))
 
-    # field = [
-    #     [0, 0, 0, 1, 0],
-    #     [0, 0, 0, 1, 0],
-    #     [0, 0, 0, 1, 0],
-    #     [0, 0, 1, 0, 0],
-    #     [0, 0, 1, 0, 0]
-    # ] # True
-    # print("Should be True, is  ", isFieldSplit(field))
+    field = [
+        [0, 0, 0, 1, 0],
+        [0, 0, 0, 1, 0],
+        [0, 0, 0, 1, 0],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0]
+    ] # True
+    print("Should be True, is  ", isFieldSplit(field))
 
-    # field = [
-    #     [0, 0, 0, 0, 1],
-    #     [0, 0, 0, 1, 0],
-    #     [0, 0, 1, 0, 0],
-    #     [0, 1, 0, 0, 0],
-    #     [1, 0, 0, 0, 0]
-    # ] # True
-    # print("Should be True, is  ", isFieldSplit(field))
+    field = [
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 1, 0],
+        [0, 0, 1, 0, 0],
+        [0, 1, 0, 0, 0],
+        [1, 0, 0, 0, 0]
+    ] # True
+    print("Should be True, is  ", isFieldSplit(field))
 
-    # field = [
-    #     [0, 0, 0, 0, 1],
-    #     [0, 0, 0, 1, 1],
-    #     [0, 0, 1, 1, 0],
-    #     [0, 1, 1, 0, 0],
-    #     [0, 0, 0, 0, 0]
-    # ] # False
-    # print("Should be False, is ", isFieldSplit(field))
+    field = [
+        [0, 0, 0, 0, 1],
+        [0, 0, 0, 1, 1],
+        [0, 0, 1, 1, 0],
+        [0, 1, 1, 0, 0],
+        [0, 0, 0, 0, 0]
+    ] # False
+    print("Should be False, is ", isFieldSplit(field))
 
 
 

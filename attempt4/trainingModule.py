@@ -8,48 +8,22 @@ def snakeDriver(model):
     isGameOver = False
 
     while not isGameOver:
-        networkInput = [0] * 4
-        networkInput[snakeInstance.direction - 1] = 1
+        networkInput = []
 
         headPosition = snakeInstance.snakePosition[0]
-        match snakeInstance.direction:
-            case 1:
-                headNeighbours = {
-                    "left": [headPosition[0] - 1, headPosition[1]],
-                    "forward": [headPosition[0], headPosition[1] - 1],
-                    "right": [headPosition[0] + 1, headPosition[1]]
-                }
-            case 2:
-                headNeighbours = {
-                    "left": [headPosition[0], headPosition[1] - 1],
-                    "forward": [headPosition[0] + 1, headPosition[1]],
-                    "right": [headPosition[0], headPosition[1] + 1]
-                }
-            case 3:
-                headNeighbours = {
-                    "left": [headPosition[0] + 1, headPosition[1]],
-                    "forward": [headPosition[0], headPosition[1] + 1],
-                    "right": [headPosition[0] - 1, headPosition[1]]
-                }
-            case 4:
-                headNeighbours = {
-                    "left": [headPosition[0], headPosition[1] + 1],
-                    "forward": [headPosition[0] - 1, headPosition[1]],
-                    "right": [headPosition[0], headPosition[1] - 1]
-                }
-            case _:
-                headNeighbours = {}
+        headNeighbours = [
+            (headPosition[0], headPosition[1] - 1),
+            (headPosition[0] + 1, headPosition[1]),
+            (headPosition[0], headPosition[1] + 1),
+            (headPosition[0] - 1, headPosition[1])
+        ]
 
-        obstacles = [0, 0, 0]
-        for index, value in enumerate(headNeighbours):
-            if headNeighbours[value][0] < 0 or headNeighbours[value][0] == snakeInstance.fieldWidth or headNeighbours[value][1] < 0 or headNeighbours[value][1] == snakeInstance.fieldHeight:
-                obstacles[index] = 1
-                continue
-
-            if headNeighbours[value] in snakeInstance.snakePosition: obstacles[index] = 1
+        obstacles = []
+        for value in headNeighbours:
+            if value[0] < 0 or value[0] == snakeInstance.fieldWidth or value[1] < 0 or value[1] == snakeInstance.fieldHeight or value in snakeInstance.snakePosition: obstacles.append(1)
+            else: obstacles.append(0)
 
         networkInput += obstacles
-
 
         def isFieldSplit(field):
             # ChatGPT go brr
@@ -62,7 +36,7 @@ def snakeDriver(model):
 
             # Helper function to perform a depth-first search (DFS)
             def dfs(row, col):
-                if not is_valid_position(row, col) or field[row][col] != 0:
+                if not is_valid_position(row, col) or (field[row][col] != 0 and field[row][col] != 3):
                     return
 
                 field[row][col] = -1  # Mark the current position as visited
@@ -91,35 +65,30 @@ def snakeDriver(model):
 
             return False
         
-        for index, value in enumerate(headNeighbours):
-            if headNeighbours[value][0] < 0 or headNeighbours[value][0] == snakeInstance.fieldWidth or headNeighbours[value][1] < 0 or headNeighbours[value][1] == snakeInstance.fieldHeight:
+        for neightbour in headNeighbours:
+            if neightbour[0] < 0 or neightbour[0] == snakeInstance.fieldWidth or neightbour[1] < 0 or neightbour[1] == snakeInstance.fieldHeight:
                 networkInput += [0]
                 continue
             fieldCopy = snakeInstance.field.copy()
-            fieldCopy[headNeighbours[value][0]][headNeighbours[value][1]] = 1
+            fieldCopy[neightbour[0]][neightbour[1]] = 1
+            lastSnakePart = snakeInstance.snakePosition[-1]
+            fieldCopy[lastSnakePart[0]][lastSnakePart[1]] = 0
             networkInput += [(1 if isFieldSplit(fieldCopy) else 0)]
 
 
-        def calculate_angle(x1, y1, foodx, foody, direction):
-            angle_to_food = math.atan2(foody - y1, foodx - x1)
-            direction_radians = math.radians((direction - 1) * 90)
-                
-            # Calculate the difference in angles
-            angle_difference = math.degrees(angle_to_food - direction_radians) + 90
-            
-            # Adjust the angle to be within the range of -180 to 180 degrees
-            if angle_difference > 180:
-                angle_difference -= 360
-            elif angle_difference < -180:
-                angle_difference += 360
-            return angle_difference
+        def calculate_angle(x, y, foodx, foody):
+            dx = x - foodx
+            dy = y - foody
+            angle = math.degrees(math.atan2(dy, dx))
+            angle = ((angle - 90) % 360)
+            return angle
         
-        angle = calculate_angle(headPosition[0], headPosition[1], snakeInstance.foodX, snakeInstance.foodY, snakeInstance.direction)
+        angle = calculate_angle(headPosition[0], headPosition[1], snakeInstance.foodX, snakeInstance.foodY)
 
-        if angle == 0: networkInput += [0, 0, 0, 0]
-        elif angle == 180: networkInput += [1, 1, 1, 1]
-        elif angle > 0: networkInput += [0, 1, 0, angle / 180]
-        elif angle < 0: networkInput += [1, 0, - angle / 180, 0]
+        if angle >= 315 or angle <= 45: networkInput += [1, 0, 0, 0, angle / 360]
+        elif angle > 45 and angle <= 135: networkInput += [0, 1, 0, 0, angle / 360]
+        elif angle > 135 and angle < 225: networkInput += [0, 0, 1, 0, angle / 360]
+        elif angle >= 225 and angle < 315: networkInput += [0, 0, 0, 1, angle / 360]
 
         networkOutput = model.forward(networkInput)
         isGameOver = snakeInstance.gameLoop(networkOutput.index(max(networkOutput)) + 1)

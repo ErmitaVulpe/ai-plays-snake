@@ -27,7 +27,7 @@ if __name__ == '__main__':
     top100List = ai4.load(top100File)
 
     
-    num_processes = 7
+    num_processes = 1
 
 # ---
 
