@@ -2,8 +2,27 @@ import ai4
 import trainingModule
 import copy
 import multiprocessing
+import sys
 
 if __name__ == '__main__':
+    num_processes = 1
+    generations = float('inf')
+    
+    if len(sys.argv) > 1:
+        num_processes = sys.argv[1]
+        try:
+            num_processes = int(num_processes)
+        except:
+            print("Invalid number of training instances.")
+            exit()
+    if len(sys.argv) > 2:
+        generations = sys.argv[2]
+        try:
+            generations = int(generations)
+        except:
+            print("Invalid number of training generations.")
+            exit()
+
     def split_list_into_even_lists(lst, x):
         # Calculate the size of each sub-list
         sublist_size = len(lst) // x
@@ -26,14 +45,11 @@ if __name__ == '__main__':
     top100File = "trainingModels.pickle"
     top100List = ai4.load(top100File)
 
-    
-    num_processes = 1
-
 # ---
 
-    i = 10
-    while i != 0:
-        i -= 1
+    i = 0
+    while i <= generations:
+        i += 1
 
         trainingSet = []
         top100List = ai4.load(top100File)

@@ -58,12 +58,12 @@ class neuralNetwork:
     # --- removeLayer
 
     def removeLayer(self, layerIndex: int = None):
-        if layerIndex == "l0" or layerIndex == "l1": return print(f"Cannot remove {layerIndex}")
+        if layerIndex == "l0" or layerIndex == "l1": return print(f"(-) Cannot remove {layerIndex}")
         if layerIndex == None:
             filteredLayers = [element for element in list(self.layers) if element != "l0" and element != "l1"]
-            if len(filteredLayers) == 0: return print("No layers to remove.")
+            if len(filteredLayers) == 0: return print("(-) No layers to remove.")
             layerIndex = random.choice(filteredLayers)
-        if layerIndex not in self.layers: return print("Cannot remove a non-existing layer.")
+        if layerIndex not in self.layers: return print("(-) Cannot remove a non-existing layer.")
 
         for node in self.layers[layerIndex]:
             self.removeNode(node)
@@ -74,7 +74,7 @@ class neuralNetwork:
     
     def addNode(self, layerID: str = None):
         nodeID = f"n{self.nextNodeID}"
-        if layerID not in self.layers: return print("invalid layer to add a node to")
+        if layerID not in self.layers: return print("(-) invalid layer to add a node to")
         if layerID == None: 
             filteredLayers = [element for element in list(self.layers) if element != "l0" and element != "l1"]
             if len(filteredLayers) < 3: return self.addLayer()
@@ -89,9 +89,9 @@ class neuralNetwork:
     # --- removeNode
     
     def removeNode(self, nodeID: str = None):
-        if nodeID in self.layers["l0"] + self.layers["l1"]: return print("Cannot remove a node from input or output layer.")
+        if nodeID in self.layers["l0"] + self.layers["l1"]: return print("(-) Cannot remove a node from input or output layer.")
         filteredLayers = [element for element in list(self.layers) if element != "l0" and element != "l1"]
-        if len(filteredLayers) == 0: return print("No layers to remove nodes from")
+        if len(filteredLayers) == 0: return print("(-) No layers to remove nodes from")
         nodeID = random.choice(self.layers[random.choice(filteredLayers)])
         nodePointer = self.nodes[nodeID]
 
@@ -134,8 +134,8 @@ class neuralNetwork:
                 parentLayerID = random.choice(self.layerOrder[:1])
                 childLayerID = random.choice(self.layerOrder[1:])
 
-        if len(self.layers[parentLayerID]) == 0: return print("Parent layer is empty")
-        if len(self.layers[childLayerID]) == 0: return print("Child layer is empty")
+        if len(self.layers[parentLayerID]) == 0: return print("(-) Parent layer is empty")
+        if len(self.layers[childLayerID]) == 0: return print("(-) Child layer is empty")
         if parentNodeID == None: parentNodeID = random.choice(self.layers[parentLayerID])
         if childNodeID == None: childNodeID = random.choice(self.layers[childLayerID])
 
@@ -280,65 +280,3 @@ def load(fileName):
     """
     with open(fileName, 'rb') as file:
         return pickle.load(file)
-    
-# ---
-
-
-if __name__ == "__main__":
-
-    # Create a neural network with 2 input nodes and 1 output node
-    # network = NeuralNetwork(3, 4)
-    network = neuralNetwork(2, 2)
-
-    def printall(network):
-        print(f"input_size: \n", network.input_size, "\n")
-        print(f"output_size: \n", network.output_size, "\n")
-        print(f"nodes: \n", network.nodes, "\n")
-        print(f"nextNodeID: \n", network.nextNodeID, "\n")
-        print(f"connections: \n", network.connections, "\n")
-        print(f"nextConnectionID: \n", network.nextConnectionID, "\n")
-        print(f"layers: \n", network.layers, "\n")
-        print(f"nextLayerID: \n", network.nextLayerID, "\n")
-        print(f"layerOrder: \n", network.layerOrder, "\n")
-        print(f"generation: \n", network.generation, "\n")
-
-
-
-
-    # printall(network)
-    # network.addConnection(parentNodeID="n0", childNodeID="n3")
-    # network.addConnection(parentNodeID="n0", childNodeID="n3")
-    # network.addLayer()
-    # network.removeNode()
-    # network.removeLayer()
-    # network.addConnection()
-    # printall(network)
-
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    network.mutate()
-    printall(network)
-    # from timeit import default_timer as timer
-    # start = timer()
-    # print(network.forward([0.2, 0.9]))
-    # print("with GPU:", timer()-start)
-    # network.removoNode("n7")
-    # print(network.connections["c2"].parent)
-    # print(network.connections["c2"].child)
