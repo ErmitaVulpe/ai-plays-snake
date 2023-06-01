@@ -206,11 +206,11 @@ class neuralNetwork:
         addLayerChance = 0.075
         removeLayerChance = 0.05
         addNodeChance = 0.10
-        removeNodeChance = 0.10
+        removeNodeChance = 0.075
         addConnectionChance = 0.33
-        removeConnectionChance = 0.33
-        metateWeightChance = 0.40
-        metateBiasChance = 0.40
+        removeConnectionChance = 0.10
+        metateWeightChance = 0.75
+        metateBiasChance = 0.75
 
         if random.random() < addLayerChance: self.addLayer()
         if random.random() < removeLayerChance: self.removeLayer()
