@@ -104,4 +104,4 @@ def snakeDriver(model):
 model = ai4.load("best_model.pickle")
 snakeDriver(model)
 print(model.score)
-model.printall()
+print(model)

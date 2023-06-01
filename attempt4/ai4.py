@@ -7,6 +7,7 @@ import pickle
 
 class neuralNetwork:
     def __init__(self, input_size: int, output_size: int):
+        # Define an initial structure of the network
         self.input_size = input_size
         self.output_size = output_size
         self.nodes = {}
@@ -19,24 +20,33 @@ class neuralNetwork:
         self.score = 0
         self.generation = 0
 
-        # Define an initail structure of the network
+        # Creaate an initial structure of the network
         self.addLayer(0)
         for _ in range(input_size - 1): self.addNode("l0")
         self.addLayer(1)
         for _ in range(output_size - 1): self.addNode("l1")
         self.addConnection()
 
+    # Debug functions
     def printall(self):
-        print(f"input_size: \n", self.input_size, "\n")
-        print(f"output_size: \n", self.output_size, "\n")
-        print(f"nodes: \n", self.nodes, "\n")
-        print(f"nextNodeID: \n", self.nextNodeID, "\n")
-        print(f"connections: \n", self.connections, "\n")
-        print(f"nextConnectionID: \n", self.nextConnectionID, "\n")
-        print(f"layers: \n", self.layers, "\n")
-        print(f"nextLayerID: \n", self.nextLayerID, "\n")
-        print(f"layerOrder: \n", self.layerOrder, "\n")
-        print(f"generation: \n", self.generation, "\n")
+        return (
+        f"input_size: \n{self.input_size}\n\n" + \
+        f"output_size: \n{self.output_size}\n\n" + \
+        f"nodes: \n{self.nodes}\n\n" + \
+        f"nextNodeID: \n{self.nextNodeID}\n\n" + \
+        f"connections: \n{self.connections}\n\n" + \
+        f"nextConnectionID: \n{self.nextConnectionID}\n\n" + \
+        f"layers: \n{self.layers}\n\n" + \
+        f"nextLayerID: \n{self.nextLayerID}\n\n" + \
+        f"layerOrder: \n{self.layerOrder}\n\n" + \
+        f"generation: \n{self.generation}"
+        )
+
+    def __str__(self):
+        return self.printall()
+    
+    def __repr__(self):
+        return self.printall()
 
     # --- addLayer
 
@@ -45,27 +55,27 @@ class neuralNetwork:
         parameters:
             layerIndex - index of the new layer
         """
-        match len(self.layerOrder):
+        match len(self.layerOrder): # Check if this it is defining the initial structure of the network
             case 0: layerIndex = 0
             case 1: layerIndex = 1
             case _:
                 if layerIndex < 0 or layerIndex > len(self.layers): layerIndex = random.randint(1, len(self.layerOrder) - 1)
-        self.layerOrder.insert(layerIndex, f"l{self.nextLayerID}")
-        self.layers[f"l{self.nextLayerID}"] = []
-        self.addNode(f"l{self.nextLayerID}")
+        self.layerOrder.insert(layerIndex, f"l{self.nextLayerID}") # Add the new layer to the layerOrder in the apropriate place
+        self.layers[f"l{self.nextLayerID}"] = [] # Add the new layer to the layers
+        self.addNode(f"l{self.nextLayerID}") # Create an initial node for the new layer
         self.nextLayerID += 1
 
     # --- removeLayer
 
     def removeLayer(self, layerIndex: int = None):
-        if layerIndex == "l0" or layerIndex == "l1": return print(f"(-) Cannot remove {layerIndex}")
-        if layerIndex == None:
+        if layerIndex == "l0" or layerIndex == "l1": return print(f"(-) Cannot remove {layerIndex}") # Check if the specified layer is the input or the output layer
+        if layerIndex == None: # If layer unspecified choose a random one
             filteredLayers = [element for element in list(self.layers) if element != "l0" and element != "l1"]
-            if len(filteredLayers) == 0: return print("(-) No layers to remove.")
-            layerIndex = random.choice(filteredLayers)
-        if layerIndex not in self.layers: return print("(-) Cannot remove a non-existing layer.")
+            if len(filteredLayers) == 0: return print("(-) No layers to remove.") # Make sure to not remove the input or the output layer
+            layerIndex = random.choice(filteredLayers) # choose a random layer
+        if layerIndex not in self.layers: return print("(-) Cannot remove a non-existing layer.") # A check just in case
 
-        for node in self.layers[layerIndex]:
+        for node in self.layers[layerIndex]: # Remove all nodes in the layer
             self.removeNode(node)
         if layerIndex in self.layers: self.layers.pop(layerIndex)
         if layerIndex in self.layerOrder: self.layerOrder.remove(layerIndex)
