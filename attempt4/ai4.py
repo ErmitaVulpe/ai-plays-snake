@@ -189,6 +189,9 @@ class neuralNetwork:
         for i in inputs:
             if not isinstance(i, (float, int)): raise ValueError(f"\033[31m Input contains a non numerical value \033[0m")
 
+        for nodeID in self.nodes: # Reset all nodes values to 0
+            self.nodes[nodeID].value = 0
+
         for index, nodeID in enumerate(self.layers["l0"]):
             self.nodes[nodeID].value = inputs[index]
 
@@ -196,14 +199,14 @@ class neuralNetwork:
             for nodeID in self.layers[layerID]:
                 weights = []
                 values = []
+                value = 0
                 for connectionID in self.nodes[nodeID].parentsConnections:
                     # value += self.nodes[self.connections[connectionID].parent].value * self.connections[connectionID].weight
                     weights.append(self.connections[connectionID].weight)
                     values.append(self.nodes[self.connections[connectionID].parent].value)
                 value = matrixMultiplication(weights, values)
                 value += self.nodes[nodeID].bias
-                # self.nodes[nodeID].value = max(math.tanh(2 * value), 0)
-                self.nodes[nodeID].value = math.tanh(2 * value)
+                self.nodes[nodeID].value = max(math.tanh(2 * value), 0)
 
         output = []
         for nodeID in self.layers[self.layerOrder[-1]]:
@@ -261,12 +264,40 @@ class node:
         self.bias = math.tanh(2 * random.uniform(-1, 1))
         self.value = 0
 
+    # Debug functions
+    def printall(self):
+        return (
+        f"bias: {self.bias} " + \
+        f"parentsConnections: {self.parentsConnections} " + \
+        f"childrenConnections: {self.childrenConnections}"
+        )
+
+    def __str__(self):
+        return self.printall()
+    
+    def __repr__(self):
+        return self.printall()
+
 
 class connection:
     def __init__(self, parent, child):
         self.parent = parent
         self.child = child
         self.weight = math.tanh(2 * random.uniform(-1, 1))
+
+    # Debug functions
+    def printall(self):
+        return (
+        f"weight: {self.weight} " + \
+        f"parent: {self.parent} " + \
+        f"child: {self.child}"
+        )
+
+    def __str__(self):
+        return self.printall()
+    
+    def __repr__(self):
+        return self.printall()
 
 # ---
 
