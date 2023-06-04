@@ -206,7 +206,7 @@ class neuralNetwork:
                     values.append(self.nodes[self.connections[connectionID].parent].value)
                 value = matrixMultiplication(weights, values)
                 value += self.nodes[nodeID].bias
-                self.nodes[nodeID].value = max(math.tanh(2 * value), 0)
+                self.nodes[nodeID].value += max(math.tanh(2 * value), 0)
 
         output = []
         for nodeID in self.layers[self.layerOrder[-1]]:
