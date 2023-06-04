@@ -6,6 +6,7 @@ sys.setrecursionlimit(10**6)
 def snakeDriver(model):
     snakeInstance = snake.snakeGame(60, 40, False)
     isGameOver = False
+    movesSinceLastFood = currentScore = 0
 
     while not isGameOver:
         networkInput = []
@@ -94,8 +95,18 @@ def snakeDriver(model):
         moveDirection = networkOutput.index(max(networkOutput)) + 1
         isGameOver = snakeInstance.gameLoop(moveDirection)
 
+        if snakeInstance.score > currentScore:
+            currentScore = snakeInstance.score
+            movesSinceLastFood = 0
+        else: movesSinceLastFood += 1
+
+        if movesSinceLastFood > snakeInstance.fieldWidth * snakeInstance.fieldHeight * 2:
+            model.score += - 50
+            isGameOver = True
+
         normalisedAngle = networkInput[-5:-1]
         if normalisedAngle[moveDirection - 1] == 1: model.score += 1
+
     model.score += snakeInstance.score * 10 + (1 / (math.sqrt(abs(headPosition[0] - snakeInstance.foodX) ** 2 + abs(headPosition[1] - snakeInstance.foodY) ** 2))) - 10
 
 

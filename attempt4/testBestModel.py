@@ -93,11 +93,10 @@ def snakeDriver(model):
         elif angle >= 225 and angle < 315: networkInput += [0, 0, 0, 1, angle / 360]
 
         networkOutput = model.forward(networkInput)
-        print(networkOutput)
         moveDirection = networkOutput.index(max(networkOutput)) + 1
         isGameOver = snakeInstance.gameLoop(moveDirection)
 
-        time.sleep(0.1)
+        time.sleep(0.05)
     
 
 
