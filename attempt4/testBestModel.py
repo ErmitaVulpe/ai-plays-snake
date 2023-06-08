@@ -6,7 +6,7 @@ import sys
 sys.setrecursionlimit(10**6)
 
 def snakeDriver(model):
-    snakeInstance = snake.snakeGame(60, 40, True)
+    snakeInstance = snake.snakeGame(15, 15, True)
     isGameOver = False
 
     while not isGameOver:
@@ -69,14 +69,14 @@ def snakeDriver(model):
         
         for neightbour in headNeighbours:
             if neightbour[0] < 0 or neightbour[0] == snakeInstance.fieldWidth or neightbour[1] < 0 or neightbour[1] == snakeInstance.fieldHeight:
-                networkInput += [0]
+                networkInput += [1]
                 continue
             fieldCopy = snakeInstance.field.copy()
             fieldCopy[neightbour[0]][neightbour[1]] = 1
             lastSnakePart = snakeInstance.snakePosition[-1]
             fieldCopy[lastSnakePart[0]][lastSnakePart[1]] = 0
             networkInput += [(1 if isFieldSplit(fieldCopy) else 0)]
-
+        nextMovesSplitTheField = networkInput[-4:]
 
         def calculate_angle(x, y, foodx, foody):
             dx = x - foodx
@@ -87,20 +87,23 @@ def snakeDriver(model):
         
         angle = calculate_angle(headPosition[0], headPosition[1], snakeInstance.foodX, snakeInstance.foodY)
 
-        if angle >= 315 or angle <= 45: networkInput += [1, 0, 0, 0, angle / 360]
-        elif angle > 45 and angle <= 135: networkInput += [0, 1, 0, 0, angle / 360]
-        elif angle > 135 and angle < 225: networkInput += [0, 0, 1, 0, angle / 360]
-        elif angle >= 225 and angle < 315: networkInput += [0, 0, 0, 1, angle / 360]
+        if angle >= 315 or angle <= 45: networkInput += [1, 0, 0, 0, ((360 - angle) / -45 if angle > 180 else angle / 45), 0, 0, 0]
+        elif angle > 45 and angle <= 135: networkInput += [0, 1, 0, 0,  0, (angle - 90) / 45, 0, 0]
+        elif angle > 135 and angle < 225: networkInput += [0, 0, 1, 0,  0, 0, (angle - 180) / 45, 0]
+        elif angle >= 225 and angle < 315: networkInput += [0, 0, 0, 1, (angle - 270) / 45, 0, 0, 0]
 
         networkOutput = model.forward(networkInput)
+        # input(networkInput)
         moveDirection = networkOutput.index(max(networkOutput)) + 1
         isGameOver = snakeInstance.gameLoop(moveDirection)
 
-        time.sleep(0.05)
+        # time.sleep(0.02)
     
 
 
 model = ai4.load("best_model.pickle")
+# model = ai4.load("trainingModels.pickle")[-1]
 snakeDriver(model)
+# input()
 print(model.score)
 print(model)

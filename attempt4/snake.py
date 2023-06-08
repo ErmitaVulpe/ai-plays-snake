@@ -9,13 +9,13 @@ class snakeGame:
         self.fieldWidth = width
         self.fieldHeight = height
         self.direction = 1
-        self.score = 1
+        self.score = 2
         self.field = numpy.zeros((self.fieldWidth, self.fieldHeight), dtype=int)
         self.foodX = random.randint(0, self.fieldWidth - 1)
         self.foodY = random.randint(0, self.fieldHeight - 1)
         self.snakePosition = [(self.fieldWidth // 2, self.fieldHeight // 2)]
+        self.snakePosition.append((self.snakePosition[0][0], self.snakePosition[0][1] + 1))
         self.visible = visible
-        # self.
 
         self.mapSnake()
         self.addFood()
@@ -64,7 +64,6 @@ class snakeGame:
 
         Returns (bool): True if the game ends
         """
-        # if self.gameOver: return print("Bruh the game is already over")
         self.gameOver = False
         if newDirection < 1 or newDirection > 4: return print("Direction out of range. (1 - 4)")
         if newDirection + 2 == self.direction or newDirection - 2 == self.direction:

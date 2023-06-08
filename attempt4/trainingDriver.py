@@ -3,6 +3,7 @@ import trainingModule
 import copy
 import multiprocessing
 import sys
+import statistics
 
 if __name__ == '__main__':
     num_processes = 1
@@ -63,15 +64,30 @@ if __name__ == '__main__':
                 trainingSet.append(newModel)
             model.generation += 1
 
-        print(trainingSet[0].generation)
+        print("-" * 20, f"Generation: {trainingSet[0].generation}", "-" * 20)
 
         with multiprocessing.Pool(processes=num_processes) as pool:
             results = pool.map(trainingModule.trainingInstance, split_list_into_even_lists(trainingSet, num_processes))
 
         trainingSet = [item for sublist in results for item in sublist]
-
         trainingSet.sort(key=lambda obj: obj.score, reverse=True)
-        print(trainingSet[0].score, trainingSet[-1].score)
+        scores = []
+        for model in trainingSet: scores.append(model.score)
+
+        print("Maximum:", scores[0])
+        print("Minimum:", scores[-1])
+        print("Average:", sum(scores) / len(scores))
+        print("Mean:", statistics.mean(scores))
+        print("Standard Deviation:", statistics.stdev(scores))
+
+        top100Scores = scores[:100]
+        print("\nTOP 100")
+        print("Maximum:", top100Scores[0])
+        print("Minimum:", top100Scores[-1])
+        print("Average:", sum(top100Scores) / len(top100Scores))
+        print("Mean:", statistics.mean(top100Scores))
+        print("Standard Deviation:", statistics.stdev(top100Scores))
+
         ai4.export(top100File, trainingSet[:100])
         ai4.export(bestModelFile, trainingSet[0])
 

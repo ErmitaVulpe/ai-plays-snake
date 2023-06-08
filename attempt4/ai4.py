@@ -84,10 +84,9 @@ class neuralNetwork:
     
     def addNode(self, layerID: str = None):
         nodeID = f"n{self.nextNodeID}"
-        if layerID not in self.layers: return print("(-) invalid layer to add a node to")
         if layerID == None: 
             filteredLayers = [element for element in list(self.layers) if element != "l0" and element != "l1"]
-            if len(filteredLayers) < 3: return self.addLayer()
+            if len(filteredLayers) == 0: return print("(-) No layers to add the node to")
             layerID = random.choice(filteredLayers)
         self.nodes[nodeID] = node(layerID)
         self.layers[layerID].append(nodeID)
@@ -201,7 +200,6 @@ class neuralNetwork:
                 values = []
                 value = 0
                 for connectionID in self.nodes[nodeID].parentsConnections:
-                    # value += self.nodes[self.connections[connectionID].parent].value * self.connections[connectionID].weight
                     weights.append(self.connections[connectionID].weight)
                     values.append(self.nodes[self.connections[connectionID].parent].value)
                 value = matrixMultiplication(weights, values)
@@ -217,25 +215,23 @@ class neuralNetwork:
     # --- mutations
 
     def mutate(self):
-        addLayerChance = 0.075
-        removeLayerChance = 0.05
-        addNodeChance = 0.10
-        removeNodeChance = 0.075
-        addConnectionChance = 0.33
-        removeConnectionChance = 0.10
+        addLayerChance = 0.025
+        removeLayerChance = 0.025
+        addNodeChance = 0.2
+        removeNodeChance = 0.125
+        addConnectionChance = 0.40
+        removeConnectionChance = 0.075
         metateWeightChance = 0.75
         metateBiasChance = 0.75
 
         if random.random() < addLayerChance: self.addLayer()
         if random.random() < removeLayerChance: self.removeLayer()
 
-        for layer in [element for element in list(self.layers) if element != "l0" and element != "l1"]:
-            if random.random() < addNodeChance: self.addNode(layer)
-            if random.random() < removeNodeChance: self.removeNode(layer)
+        if random.random() < addNodeChance: self.addNode()
+        if random.random() < removeNodeChance: self.removeNode()
+
 
         for node in list(self.nodes):
-            # if random.random() < addConnectionChance: self.addConnection(parentNodeID=node)
-            # if random.random() < addConnectionChance: self.addConnection(childNodeID=node)
             if random.random() < addConnectionChance: self.addConnection()
             if random.random() < metateBiasChance: self.mutateBias(node)
 
@@ -248,11 +244,11 @@ class neuralNetwork:
     
     def mutateWeight(self, connectionID: str = None):
         if connectionID == None: connectionID = random.choice(self.connections)
-        self.connections[connectionID].weight += math.sinh(2 * random.uniform(-1, 1)) / 30
+        self.connections[connectionID].weight += math.sinh(2 * random.uniform(-1, 1)) / 40
 
     def mutateBias(self, nodeID: str = None):
         if nodeID == None: nodeID = random.choice(self.nodes)
-        self.nodes[nodeID].bias += math.sinh(2 * random.uniform(-1, 1)) / 30
+        self.nodes[nodeID].bias += math.sinh(2 * random.uniform(-1, 1)) / 40
 
 # ---
 

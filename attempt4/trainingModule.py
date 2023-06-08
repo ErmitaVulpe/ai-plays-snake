@@ -4,7 +4,7 @@ import sys
 sys.setrecursionlimit(10**6)
 
 def snakeDriver(model):
-    snakeInstance = snake.snakeGame(60, 40, False)
+    snakeInstance = snake.snakeGame(15, 15, False)
     isGameOver = False
     movesSinceLastFood = currentScore = 0
 
@@ -68,14 +68,14 @@ def snakeDriver(model):
         
         for neightbour in headNeighbours:
             if neightbour[0] < 0 or neightbour[0] == snakeInstance.fieldWidth or neightbour[1] < 0 or neightbour[1] == snakeInstance.fieldHeight:
-                networkInput += [0]
+                networkInput += [1]
                 continue
             fieldCopy = snakeInstance.field.copy()
             fieldCopy[neightbour[0]][neightbour[1]] = 1
             lastSnakePart = snakeInstance.snakePosition[-1]
             fieldCopy[lastSnakePart[0]][lastSnakePart[1]] = 0
             networkInput += [(1 if isFieldSplit(fieldCopy) else 0)]
-
+        nextMovesSplitTheField = networkInput[-4:]
 
         def calculate_angle(x, y, foodx, foody):
             dx = x - foodx
@@ -86,28 +86,30 @@ def snakeDriver(model):
         
         angle = calculate_angle(headPosition[0], headPosition[1], snakeInstance.foodX, snakeInstance.foodY)
 
-        if angle >= 315 or angle <= 45: networkInput += [1, 0, 0, 0, angle / 360]
-        elif angle > 45 and angle <= 135: networkInput += [0, 1, 0, 0, angle / 360]
-        elif angle > 135 and angle < 225: networkInput += [0, 0, 1, 0, angle / 360]
-        elif angle >= 225 and angle < 315: networkInput += [0, 0, 0, 1, angle / 360]
+        if angle >= 315 or angle <= 45: networkInput += [1, 0, 0, 0, ((360 - angle) / -45 if angle > 180 else angle / 45), 0, 0, 0]
+        elif angle > 45 and angle <= 135: networkInput += [0, 1, 0, 0,  0, (angle - 90) / 45, 0, 0]
+        elif angle > 135 and angle < 225: networkInput += [0, 0, 1, 0,  0, 0, (angle - 180) / 45, 0]
+        elif angle >= 225 and angle < 315: networkInput += [0, 0, 0, 1, (angle - 270) / 45, 0, 0, 0]
 
         networkOutput = model.forward(networkInput)
         moveDirection = networkOutput.index(max(networkOutput)) + 1
         isGameOver = snakeInstance.gameLoop(moveDirection)
 
+        # Check if he's an idiot
         if snakeInstance.score > currentScore:
             currentScore = snakeInstance.score
             movesSinceLastFood = 0
-        else: movesSinceLastFood += 1
+        else: 
+            movesSinceLastFood += 1
+            model.score += - 0.025
 
-        if movesSinceLastFood > snakeInstance.fieldWidth * snakeInstance.fieldHeight * 2:
-            model.score += - 50
+        if movesSinceLastFood > snakeInstance.fieldWidth * snakeInstance.fieldHeight:
+            model.score += - 500
             isGameOver = True
 
-        normalisedAngle = networkInput[-5:-1]
-        if normalisedAngle[moveDirection - 1] == 1: model.score += 1
+        if nextMovesSplitTheField[moveDirection - 1] == 1: model.score += -10
 
-    model.score += snakeInstance.score * 10 + (1 / (math.sqrt(abs(headPosition[0] - snakeInstance.foodX) ** 2 + abs(headPosition[1] - snakeInstance.foodY) ** 2))) - 10
+    model.score += snakeInstance.score * 10 + (1 / (math.sqrt(abs(headPosition[0] - snakeInstance.foodX) ** 2 + abs(headPosition[1] - snakeInstance.foodY) ** 2))) - 15
 
 
 def trainingInstance(modelList):
