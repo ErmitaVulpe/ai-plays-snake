@@ -219,8 +219,8 @@ class neuralNetwork:
         removeLayerChance = 0.025
         addNodeChance = 0.2
         removeNodeChance = 0.125
-        addConnectionChance = 0.40
-        removeConnectionChance = 0.075
+        addConnectionChance = 0.20
+        removeConnectionChance = 0.20
         metateWeightChance = 0.75
         metateBiasChance = 0.75
 
@@ -233,11 +233,11 @@ class neuralNetwork:
 
         for node in list(self.nodes):
             if random.random() < addConnectionChance: self.addConnection()
+            if random.random() < removeConnectionChance: self.removeConnection()
             if random.random() < metateBiasChance: self.mutateBias(node)
 
         for connection in list(self.connections):
             if random.random() < metateWeightChance: self.mutateWeight(connection)
-            if random.random() < removeConnectionChance: self.removeConnection(connection)
 
         self.generation += 1
 
