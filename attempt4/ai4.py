@@ -215,12 +215,12 @@ class neuralNetwork:
     # --- mutations
 
     def mutate(self):
-        addLayerChance = 0.025
-        removeLayerChance = 0.025
-        addNodeChance = 0.2
-        removeNodeChance = 0.125
-        addConnectionChance = 0.20
-        removeConnectionChance = 0.20
+        addLayerChance = 0.0025
+        removeLayerChance = 0.0025
+        addNodeChance = 0.075
+        removeNodeChance = 0.075
+        addConnectionChance = 0.1
+        removeConnectionChance = 0.1
         metateWeightChance = 0.75
         metateBiasChance = 0.75
 
