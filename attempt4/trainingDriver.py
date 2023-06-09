@@ -4,6 +4,7 @@ import copy
 import multiprocessing
 import sys
 import statistics
+import json
 
 if __name__ == '__main__':
     num_processes = 1
@@ -87,6 +88,28 @@ if __name__ == '__main__':
         print("Average:", sum(top100Scores) / len(top100Scores))
         print("Mean:", statistics.mean(top100Scores))
         print("Standard Deviation:", statistics.stdev(top100Scores))
+
+        with open('modelHistory.json', 'r') as file:
+            json_data = json.load(file)
+
+        # Step 2: Append data to the dictionary
+        new_data = {trainingSet[0].generation: {
+            "topMax": top100Scores[0],
+            "topMin": top100Scores[-1],
+            "topAvg": sum(top100Scores) / len(top100Scores),
+            "topMean": statistics.mean(top100Scores),
+            "topStdev": statistics.stdev(top100Scores),
+            "Max": scores[0],
+            "Min": scores[-1],
+            "Avg": sum(scores) / len(scores),
+            "Mean": statistics.mean(scores),
+            "Stdev": statistics.stdev(scores)
+        }}
+        json_data.update(new_data)
+
+        # Step 3: Write the updated dictionary back to the JSON file
+        with open('modelHistory.json', 'w') as file:
+            json.dump(json_data, file)
 
         ai4.export(top100File, trainingSet[:100])
         ai4.export(bestModelFile, trainingSet[0])
