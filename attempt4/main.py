@@ -22,36 +22,36 @@ def start_script():
     num_instances = int(num_instances_entry.get())
     running = True
 
-    def split_list_into_even_lists(lst, x):
-        # Calculate the size of each sub-list
-        sublist_size = len(lst) // x
-        remainder = len(lst) % x
-        
-        # Initialize the resulting list of sub-lists
-        sublists = []
-        
-        # Split the original list into sub-lists
-        start_index = 0
-        for i in range(x):
-            sublist_length = sublist_size + (1 if i < remainder else 0)
-            end_index = start_index + sublist_length
-            sublist = lst[start_index:end_index]
-            sublists.append(sublist)
-            start_index = end_index
-        return sublists
+    def trainingDriver(num_processes: int):
+        def split_list_into_even_lists(lst, x):
+            # Calculate the size of each sub-list
+            sublist_size = len(lst) // x
+            remainder = len(lst) % x
+            
+            # Initialize the resulting list of sub-lists
+            sublists = []
+            
+            # Split the original list into sub-lists
+            start_index = 0
+            for i in range(x):
+                sublist_length = sublist_size + (1 if i < remainder else 0)
+                end_index = start_index + sublist_length
+                sublist = lst[start_index:end_index]
+                sublists.append(sublist)
+                start_index = end_index
+            return sublists
     
-    bestModelFile = "best_model.pickle"
-    top100File = "trainingModels.pickle"
-    top100List = ai4.load(top100File)
+        bestModelFile = "best_model.pickle"
+        top100File = "trainingModels.pickle"
+        top100List = ai4.load(top100File)
 
-    while running:
         trainingSet = []
         top100List = ai4.load(top100File)
 
         for model in top100List:
             model.score = 0
             trainingSet.append(model)
-            for _ in range(9):
+            for i in range(9):
                 newModel = copy.deepcopy(model)
                 newModel.mutate()
                 trainingSet.append(newModel)
@@ -59,8 +59,8 @@ def start_script():
 
         print("-" * 20, f"Generation: {trainingSet[0].generation}", "-" * 20)
 
-        with multiprocessing.Pool(processes=num_instances) as pool:
-            results = pool.map(trainingModule.trainingInstance, split_list_into_even_lists(trainingSet, num_instances))
+        with multiprocessing.Pool(processes=num_processes) as pool:
+            results = pool.map(trainingModule.trainingInstance, split_list_into_even_lists(trainingSet, num_processes))
 
         trainingSet = [item for sublist in results for item in sublist]
         trainingSet.sort(key=lambda obj: obj.score, reverse=True)
@@ -106,7 +106,10 @@ def start_script():
         ai4.export(top100File, trainingSet[:100])
         ai4.export(bestModelFile, trainingSet[0])
 
+    while running:
+        trainingDriver(num_instances)
         plot_graph(currentGraph)
+        
 
 # Function to stop the script execution
 def stop_script():
@@ -176,6 +179,7 @@ def plot_graph(plotCategory: str):
         y.append(modelHistory[generation][plotCategory])
 
     ax.plot(x, y)
+    ax.autoscale()
 
     # Add a horizontal line at y = 0
     ax.axhline(y=0, color='k', linestyle='-')
