@@ -7,7 +7,8 @@ import json
 import sys
 import statistics
 import copy
-import multiprocessing
+from multiprocessing import Pool
+from concurrent.futures import ThreadPoolExecutor
 import ai4
 import trainingModule
 import time
@@ -59,8 +60,11 @@ def start_script():
 
         print("-" * 20, f"Generation: {trainingSet[0].generation}", "-" * 20)
 
-        with multiprocessing.Pool(processes=num_processes) as pool:
-            results = pool.map(trainingModule.trainingInstance, split_list_into_even_lists(trainingSet, num_processes))
+        splittedModels = split_list_into_even_lists(trainingSet, num_processes)
+        # with Pool(processes=num_processes) as pool:
+        #     results = pool.map(trainingModule.trainingInstance, splittedModels)
+        with ThreadPoolExecutor() as executor:
+            results = executor.map(trainingModule.trainingInstance, splittedModels)
 
         trainingSet = [item for sublist in results for item in sublist]
         trainingSet.sort(key=lambda obj: obj.score, reverse=True)
