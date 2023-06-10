@@ -6,7 +6,7 @@ import sys
 sys.setrecursionlimit(10**6)
 
 def snakeDriver(model):
-    snakeInstance = snake.snakeGame(10, 10, True)
+    snakeInstance = snake.snakeGame(15, 15, True)
     isGameOver = False
 
     def isFieldSplit(field):
@@ -145,7 +145,7 @@ def snakeDriver(model):
         # moveDirection = int(input())
         isGameOver = snakeInstance.gameLoop(moveDirection)
 
-        time.sleep(0.05)
+        # time.sleep(0.05)
     
 
 
